@@ -4,7 +4,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
-import java.util.Arrays;
 
 public class Controller {
     @FXML
@@ -103,11 +102,10 @@ public class Controller {
 
         answer.setOnAction(e -> {
             Calculation calculation = new Calculation(expression.toString(), operations);
-            String[] items = expression.toString().split(" ");
-            if (calculation.isValidate())
+            if (calculation.isValidateInput())
                 output.setText(calculation.calculate());
             else {
-                if (items.length == 1 && Arrays.stream(operations).noneMatch(x -> x.equals(items[0])) && !items[0].equals("."))
+                if (calculation.onlyOneOperand())
                     return;
                 output.setText("error");
                 expression.delete(0, expression.length());

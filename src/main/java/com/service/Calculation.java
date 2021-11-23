@@ -28,7 +28,7 @@ public class Calculation {
         this.isDecimal = false;
     }
 
-    public boolean isValidate() {
+    public boolean isValidateInput() {
         if (splitExpression.length != 3)
             return false;
 
@@ -38,6 +38,11 @@ public class Calculation {
                 && Arrays.stream(operations).noneMatch(x -> x.equals(operand2))
                 && !operand1.equals(DOT_CHAR) && !operand2.equals(DOT_CHAR)
                 && countChar(expression, PERCENT_CHAR) <= 1;
+    }
+
+    public boolean onlyOneOperand() {
+        String[] items = expression.split(" ");
+        return items.length == 1 && Arrays.stream(operations).noneMatch(x -> x.equals(items[0])) && !items[0].equals(".");
     }
 
     private void setParametersValues() {
