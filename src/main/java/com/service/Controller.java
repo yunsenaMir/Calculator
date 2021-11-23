@@ -76,7 +76,9 @@ public class Controller {
 
         StringBuilder expression = new StringBuilder();
 
-
+        /*
+          Action when clicking on operands button
+         */
         for (int i = 0; i < operands.length; i++) {
             int finalI = i;
             operands[i].setOnAction(e -> {
@@ -86,6 +88,9 @@ public class Controller {
             });
         }
 
+        /*
+          Action when clicking on operation buttons
+         */
         for (int i = 0; i < operationButtons.length; i++) {
             int finalI = i;
             operationButtons[i].setOnAction(e -> {
@@ -94,24 +99,33 @@ public class Controller {
             });
         }
 
+        /*
+          Action when the dot button is pressed
+         */
         point.setOnAction(e -> {
             expression.append(".");
             String[] parts = expression.toString().split(" ");
             output.setText((parts[parts.length - 1]));
         });
 
+        /*
+          Action when the answer button is pressed
+         */
         answer.setOnAction(e -> {
             Calculation calculation = new Calculation(expression.toString(), operations);
             if (calculation.isValidateInput())
                 output.setText(calculation.calculate());
             else {
-                if (calculation.onlyOneOperand())
+                if (calculation.onlyOneOperandIsEntered())
                     return;
                 output.setText("error");
                 expression.delete(0, expression.length());
             }
         });
 
+        /*
+          Action when the cleaning button is pressed
+         */
         clear.setOnAction(e -> {
             expression.delete(0, expression.length());
             output.setText("");
