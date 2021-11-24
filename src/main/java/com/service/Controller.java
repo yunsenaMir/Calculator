@@ -4,6 +4,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
+import java.util.Arrays;
+
 
 public class Controller {
     @FXML
@@ -67,12 +69,17 @@ public class Controller {
     private Button zero;
 
     private static final String PERCENT_CHAR = "%";
+    private static final String MINUS_CHAR = "-";
+    private static final String ENTER_CHAR = " ";
+    private static final String DOT_CHAR = ".";
+    private static final String ERROR_MESSAGE = "error";
 
     @FXML
     public void initialize() {
         Button[] operands = {zero, one, two, three, four, five, six, seven, eight, nine, percent};
-        String[] operations = {"+", "-", "*", "÷", "mode"};
-        Button[] operationButtons = {plus, minus, multiply, division, mode};
+        String[] operandNumbers = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "%"};
+        String[] operations = {"+", "*", "÷", "mode"};
+        Button[] operationButtons = {plus, multiply, division, mode};
 
         StringBuilder expression = new StringBuilder();
 
@@ -83,7 +90,7 @@ public class Controller {
             int finalI = i;
             operands[i].setOnAction(e -> {
                 expression.append(finalI == 10 ? PERCENT_CHAR : finalI);
-                String[] parts = expression.toString().split(" ");
+                String[] parts = expression.toString().split(ENTER_CHAR);
                 output.setText((parts[parts.length - 1]));
             });
         }
@@ -95,16 +102,37 @@ public class Controller {
             int finalI = i;
             operationButtons[i].setOnAction(e -> {
                 output.setText(operations[finalI]);
-                expression.append(" ").append(output.getText()).append(" ");
+                expression.append(ENTER_CHAR).append(output.getText()).append(ENTER_CHAR);
             });
         }
+
+        /*
+          Action when the minus button is pressed
+         */
+        minus.setOnAction(e -> {
+                    String expressionValue = expression.toString();
+                    String[] parts = expressionValue.split(ENTER_CHAR);
+                    String lastPart = parts[parts.length - 1];
+                    if (lastPart.equals(MINUS_CHAR))
+                        return;
+                    if (expressionValue.length() == 0) {
+                        expression.append(MINUS_CHAR);
+                        output.setText(MINUS_CHAR);
+                        return;
+                    }
+                    if (Arrays.asList(operandNumbers).contains(lastPart.substring(lastPart.indexOf("-") + 1)))
+                        expression.append(ENTER_CHAR).append(MINUS_CHAR).append(ENTER_CHAR);
+                    parts = expression.toString().split(ENTER_CHAR);
+                    output.setText(parts[parts.length - 1]);
+                }
+        );
 
         /*
           Action when the dot button is pressed
          */
         point.setOnAction(e -> {
-            expression.append(".");
-            String[] parts = expression.toString().split(" ");
+            expression.append(DOT_CHAR);
+            String[] parts = expression.toString().split(ENTER_CHAR);
             output.setText((parts[parts.length - 1]));
         });
 
@@ -113,12 +141,14 @@ public class Controller {
          */
         answer.setOnAction(e -> {
             Calculation calculation = new Calculation(expression.toString(), operations);
-            if (calculation.isValidateInput())
+            if (calculation.isValidateInput()) {
                 output.setText(calculation.calculate());
-            else {
+                expression.delete(0, expression.length());
+                expression.append(output.getText());
+            } else {
                 if (calculation.onlyOneOperandIsEntered())
                     return;
-                output.setText("error");
+                output.setText(ERROR_MESSAGE);
                 expression.delete(0, expression.length());
             }
         });

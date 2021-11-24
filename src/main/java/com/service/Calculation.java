@@ -12,8 +12,10 @@ public class Calculation {
     private String operand2;
     private String operator;
     private boolean isDecimal;
+    private String decimalPart;
 
     private static final String PERCENT_CHAR = "%";
+    private static final String MINUS_CHAR = "-";
     private static final String ENTER_CHAR = " ";
     private static final String DOT_CHAR = ".";
     private static final String ERROR_MESSAGE = "error";
@@ -26,6 +28,7 @@ public class Calculation {
         this.operand2 = null;
         this.operator = null;
         this.isDecimal = false;
+        this.decimalPart = null;
     }
 
     /*
@@ -40,13 +43,14 @@ public class Calculation {
                 && Arrays.stream(operations).noneMatch(x -> x.equals(operand1))
                 && Arrays.stream(operations).noneMatch(x -> x.equals(operand2))
                 && !operand1.equals(DOT_CHAR) && !operand2.equals(DOT_CHAR)
-                && countChar(expression, PERCENT_CHAR) <= 1;
+                && countChar(expression, PERCENT_CHAR) <= 1
+                && countChar(expression, MINUS_CHAR) < 3;
     }
 
     /*
      Sectioning off operands and operator from the expression
     */
-    private void setParametersValues() {
+    public void setParametersValues() {
         operand1 = splitExpression[0];
         operand2 = splitExpression[2];
         operator = splitExpression[1];
@@ -64,7 +68,7 @@ public class Calculation {
     /*
      Counting the amount of occurrences of a regular expression through a text.
     */
-    private int countChar(String word, String pattern) {
+    public int countChar(String word, String pattern) {
         Matcher matcher = Pattern.compile(pattern).matcher(word);
         int n = 0;
         while (matcher.find()) {
@@ -79,57 +83,47 @@ public class Calculation {
     public String calculate() {
         switch (operator) {
             case "+":
-                return isDecimalCalculation() ?
-                        setIntegerFormatIfNeeded(calculatePercent(operand1, operand2) + calculatePercent(operand2, operand1)) :
-                        String.valueOf(Integer.parseInt(operand1) + Integer.parseInt(operand2));
+                return setIntegerFormatIfNeeded(calculatePercent(true) + calculatePercent(false));
             case "-":
-                return isDecimalCalculation() ?
-                        setIntegerFormatIfNeeded(calculatePercent(operand1, operand2) - calculatePercent(operand2, operand1)) :
-                        String.valueOf(Integer.parseInt(operand1) - Integer.parseInt(operand2));
+                return setIntegerFormatIfNeeded(calculatePercent(true) - calculatePercent(false));
             case "*":
                 return expression.contains(PERCENT_CHAR) ?
                         setIntegerFormatIfNeeded(multiplyWithPercent()) :
-                        isDecimal ? String.valueOf(Float.parseFloat(operand1) * Float.parseFloat(operand2)) :
-                                String.valueOf(Integer.parseInt(operand1) * Integer.parseInt(operand2));
+                        setIntegerFormatIfNeeded(Float.parseFloat(operand1) * Float.parseFloat(operand2));
             case "÷":
-                return calculatePercent(operand2, operand1) != 0 ?
-                        setIntegerFormatIfNeeded(calculatePercent(operand1, operand2) / calculatePercent(operand2, operand1)) :
+                return calculatePercent(false) != 0 ?
+                        setIntegerFormatIfNeeded(calculatePercent(true) / calculatePercent(false)) :
                         ERROR_MESSAGE;
             case "mode":
-                return calculatePercent(operand2, operand1) != 0 ?
-                        setIntegerFormatIfNeeded(calculatePercent(operand1, operand2) % calculatePercent(operand2, operand1)) :
+                return calculatePercent(false) != 0 ?
+                        setIntegerFormatIfNeeded(calculatePercent(true) % calculatePercent(false)) :
                         ERROR_MESSAGE;
         }
         return "";
     }
 
     /*
-     Checking if input operands are decimal values
-    */
-    private boolean isDecimalCalculation() {
-        return isDecimal || expression.contains(PERCENT_CHAR);
-    }
-
-    /*
      Calculating some percent from a number
     */
-    private Float calculatePercent(String operand1, String operand2) {
-        if (operand1.contains(PERCENT_CHAR))
-            return substringNumberFromPercent(operand1) * Float.parseFloat(operand2) / 100;
-        return Float.parseFloat(operand1);
+    public Float calculatePercent(boolean isFirstOperand) {
+        String firstOperand = isFirstOperand ? operand1 : operand2;
+        String secondOperand = isFirstOperand ? operand2 : operand1;
+        if (firstOperand.contains(PERCENT_CHAR))
+            return substringNumberFromPercent(firstOperand) * Float.parseFloat(secondOperand) / 100;
+        return Float.parseFloat(firstOperand);
     }
 
     /*
      Calculating the multiplication with a percentage
     */
-    private Float multiplyWithPercent() {
+    public Float multiplyWithPercent() {
         return substringNumberFromPercent(operand1) * substringNumberFromPercent(operand2) / 100;
     }
 
     /*
      Removing percent char from a string
     */
-    private Float substringNumberFromPercent(String percentNumber) {
+    public Float substringNumberFromPercent(String percentNumber) {
         if (percentNumber.contains(PERCENT_CHAR))
             return Float.parseFloat(percentNumber.substring(0, percentNumber.indexOf(PERCENT_CHAR)));
         return Float.parseFloat(percentNumber);
@@ -138,11 +132,14 @@ public class Calculation {
     /*
      Changing the float value to the integer value, if all decimal places are zero
     */
-    private String setIntegerFormatIfNeeded(float value) {
+    public String setIntegerFormatIfNeeded(float value) {
         String stringValue = String.valueOf(value);
-        String decimalPart = stringValue.substring(stringValue.indexOf(DOT_CHAR) + 1);
-        return !isDecimal && countChar(decimalPart, "0") == decimalPart.length() ?
-                stringValue.substring(0, stringValue.indexOf(DOT_CHAR)) :
+        decimalPart = stringValue.substring(stringValue.indexOf(DOT_CHAR) + 1);
+        return isIntegerValue() ? stringValue.substring(0, stringValue.indexOf(DOT_CHAR)) :
                 stringValue;
+    }
+
+    private boolean isIntegerValue() {
+        return !isDecimal && countChar(decimalPart, "0") == decimalPart.length();
     }
 }
