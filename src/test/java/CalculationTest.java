@@ -19,38 +19,38 @@ public class CalculationTest {
 
 
     @Test
-    public void checkValidateInput() {
+    void checkValidateInput() {
         assertTrue(calculation.isValidateInput());
     }
 
     @Test
-    public void onlyOneOperandIsEntered() {
+    void onlyOneOperandIsEntered() {
         assertFalse(calculation.onlyOneOperandIsEntered());
     }
 
 
     @Test
-    public void countChar() {
+    void countChar() {
         assertEquals(1, calculation.countChar(expression, "%"));
     }
 
     @Test
-    public void calculate() {
+    void calculate() {
         assertEquals("4", calculation.calculate());
     }
 
     @Test
-    public void calculatePercent() {
+    void calculatePercent() {
         assertEquals(30, calculation.calculatePercent(false));
     }
 
     @Test
-    public void substringNumberFromPercent() {
+    void substringNumberFromPercent() {
         assertEquals(25.0f, calculation.substringNumberFromPercent("25%"));
     }
 
     @Test
-    public void setIntegerFormatIfNeeded() {
+    void setIntegerFormatIfNeeded() {
         assertEquals("25", calculation.setIntegerFormatIfNeeded(25.00f));
     }
 }
